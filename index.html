@@ -1,612 +1,524 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>NEBULA SYNC | Real-time Cosmic Energy Visualizer</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      user-select: none;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Adarsh · DevOps Real-Time Command Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+        }
 
-    body {
-      background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Segoe UI', 'Poppins', 'Orbitron', 'Courier New', monospace;
-      overflow: hidden;
-      position: relative;
-      touch-action: none;
-    }
+        body {
+            background: radial-gradient(circle at 10% 20%, #0B1120, #03060C);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
 
-    /* main canvas container */
-    .universe {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
-    }
+        /* main dashboard container */
+        .devops-dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
 
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      pointer-events: none; /* so UI buttons are clickable */
-    }
+        /* header with Adarsh's name */
+        .hero {
+            backdrop-filter: blur(12px);
+            background: rgba(15, 25, 45, 0.65);
+            border: 1px solid rgba(0, 255, 196, 0.4);
+            border-radius: 2rem;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
 
-    /* futuristic HUD overlay */
-    .hud {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      z-index: 20;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 15px;
-      pointer-events: none;
-    }
+        .title-glow {
+            font-size: 1.7rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #A5F0FF, #6C63FF, #FF71CE);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
 
-    .data-panel {
-      background: rgba(10, 20, 35, 0.65);
-      backdrop-filter: blur(12px);
-      border-radius: 28px;
-      border: 1px solid rgba(0, 255, 255, 0.5);
-      padding: 12px 24px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-      font-weight: 500;
-      letter-spacing: 1px;
-      pointer-events: auto;
-    }
+        .badge-devops {
+            background: #0A1A2A;
+            padding: 6px 16px;
+            border-radius: 40px;
+            border-left: 3px solid #0ff;
+            font-weight: 500;
+        }
 
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #0ff;
-      text-shadow: 0 0 5px #0ff;
-      font-size: 0.9rem;
-    }
+        .badge-devops span {
+            color: #0ff;
+            text-shadow: 0 0 5px #0ff;
+        }
 
-    .pulse {
-      width: 12px;
-      height: 12px;
-      background-color: #0f0;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #0f0;
-      animation: pulse-anim 1.2s infinite;
-    }
+        /* kpi grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
 
-    @keyframes pulse-anim {
-      0% { opacity: 0.4; transform: scale(0.8);}
-      100% { opacity: 1; transform: scale(1.2);}
-    }
+        .kpi-card {
+            background: rgba(12, 22, 35, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1.8rem;
+            padding: 1.2rem;
+            border: 1px solid rgba(0, 255, 200, 0.25);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
 
-    .stats {
-      display: flex;
-      gap: 32px;
-      font-family: 'Orbitron', monospace;
-    }
+        .kpi-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #8BB5FF;
+            margin-bottom: 0.6rem;
+        }
 
-    .stat {
-      text-align: center;
-    }
+        .kpi-value {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #E0F2FE;
+            text-shadow: 0 0 8px #0ff3;
+            font-family: monospace;
+        }
 
-    .stat-label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      color: #9dc6ff;
-      letter-spacing: 2px;
-    }
+        .trend {
+            font-size: 0.75rem;
+            margin-left: 10px;
+            color: #2effb0;
+        }
 
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 0 0 8px cyan;
-      line-height: 1;
-    }
+        /* main grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 2rem;
+        }
 
-    .energy-wave {
-      background: rgba(0, 30, 40, 0.6);
-      border-radius: 40px;
-      padding: 8px 20px;
-      border-left: 4px solid #ff55ff;
-    }
+        .panel {
+            background: rgba(8, 18, 28, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            border: 1px solid rgba(0, 230, 200, 0.3);
+            overflow: hidden;
+            padding: 1rem;
+            transition: 0.2s;
+        }
 
-    .energy-value {
-      font-size: 1.4rem;
-      font-weight: bold;
-      background: linear-gradient(135deg, #aaffff, #ff88ff);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0 0.5rem 0.8rem 0.5rem;
+            border-bottom: 1px dashed rgba(0,255,200,0.3);
+            margin-bottom: 1rem;
+        }
 
-    button {
-      background: rgba(0, 20, 40, 0.8);
-      border: 1px solid cyan;
-      padding: 8px 20px;
-      border-radius: 60px;
-      color: cyan;
-      font-family: inherit;
-      font-weight: bold;
-      cursor: pointer;
-      backdrop-filter: blur(5px);
-      transition: 0.2s;
-      pointer-events: auto;
-    }
+        .panel-title {
+            font-weight: 600;
+            color: #9df;
+            letter-spacing: 1px;
+        }
 
-    button:hover {
-      background: cyan;
-      color: #010101;
-      box-shadow: 0 0 20px cyan;
-      border-color: white;
-    }
+        .live-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #0f6;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #0f6;
+            animation: pulseGreen 1.2s infinite;
+            margin-right: 6px;
+        }
 
-    .title {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 20;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(8px);
-      padding: 6px 18px;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      font-weight: 300;
-      letter-spacing: 2px;
-      color: #ccf;
-      border: 1px solid rgba(0,255,255,0.3);
-      pointer-events: none;
-    }
+        @keyframes pulseGreen {
+            0% { opacity: 0.4; transform: scale(0.8);}
+            100% { opacity: 1; transform: scale(1.2);}
+        }
 
-    @media (max-width: 700px) {
-      .stat-value { font-size: 1.2rem; }
-      .stats { gap: 15px; }
-      .data-panel { padding: 8px 16px; }
-      .energy-value { font-size: 1rem; }
-    }
+        /* pipeline stages */
+        .pipeline-visual {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 1rem 0;
+        }
 
-    .footer {
-      position: absolute;
-      bottom: 12px;
-      right: 20px;
-      font-size: 10px;
-      color: #4f6f8f;
-      z-index: 20;
-      background: rgba(0,0,0,0.3);
-      padding: 2px 8px;
-      border-radius: 12px;
-      pointer-events: none;
-    }
-  </style>
+        .stage {
+            flex: 1;
+            background: #0E1A28;
+            border-radius: 2rem;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #bcd;
+            transition: all 0.2s;
+        }
+
+        .stage.active {
+            background: linear-gradient(145deg, #1f6e43, #0f4c2d);
+            box-shadow: 0 0 12px #0f6;
+            color: white;
+        }
+
+        .stage.success {
+            background: #1f543b;
+            border-left: 2px solid #0f6;
+        }
+
+        /* terminal style log */
+        .log-container {
+            background: #010A14;
+            border-radius: 1.2rem;
+            padding: 0.8rem;
+            height: 180px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.7rem;
+        }
+
+        .log-line {
+            color: #b4f0c0;
+            border-left: 2px solid #0ff;
+            padding-left: 8px;
+            margin-bottom: 6px;
+            font-family: monospace;
+            white-space: nowrap;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .deploy-chart {
+            height: 160px;
+            position: relative;
+            margin-top: 0.5rem;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            background: #05121E;
+            border-radius: 1.2rem;
+            display: block;
+        }
+
+        .btn-reset {
+            background: rgba(0, 255, 200, 0.12);
+            border: 1px solid #0ff;
+            padding: 8px 18px;
+            border-radius: 3rem;
+            color: #0ff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-reset:hover {
+            background: #0ff;
+            color: #010A14;
+            box-shadow: 0 0 18px cyan;
+        }
+
+        .footer-metrics {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: #5c8faa;
+        }
+
+        @media (max-width: 780px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="universe">
-  <canvas id="cosmicCanvas"></canvas>
-  <div class="title">
-    ✦ NEBULA SYNC • REAL-TIME ENERGY FIELD ✦
-  </div>
-  <div class="hud">
-    <div class="data-panel">
-      <div class="live-badge">
-        <span class="pulse"></span>
-        <span>LIVE COSMIC STREAM</span>
-      </div>
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-label">PARTICLE FLUX</div>
-          <div class="stat-value" id="particleCount">0</div>
+<div class="devops-dashboard">
+    <!-- header with Adarsh mention -->
+    <div class="hero">
+        <div>
+            <span class="title-glow">⚡ ADARSH DEVOPS COMMAND CENTER ⚡</span>
+            <div style="font-size: 0.7rem; margin-top: 6px;">real-time CI/CD · pipeline telemetry · chaos engineering ready</div>
         </div>
-        <div class="stat">
-          <div class="stat-label">FREQUENCY (Hz)</div>
-          <div class="stat-value" id="frequencyVal">0.00</div>
+        <div class="badge-devops">
+            🧑‍💻 <span>Lead SRE: Adarsh</span> &nbsp;|&nbsp; 🔐 pipeline: active
         </div>
-      </div>
     </div>
-    <div class="data-panel energy-wave">
-      <div style="display: flex; gap: 12px; align-items: baseline;">
-        <span style="font-size: 0.8rem;">⚡ QUANTUM ENERGY</span>
-        <span class="energy-value" id="energyLevel">98.3</span>
-        <span style="font-size: 0.8rem;">ZJ</span>
-      </div>
-      <div style="width: 180px; height: 4px; background: #1a2a3a; border-radius: 4px; margin-top: 6px;">
-        <div id="energyBar" style="width: 98%; height: 100%; background: linear-gradient(90deg, cyan, magenta); border-radius: 4px;"></div>
-      </div>
+
+    <!-- KPI row : live devops metrics -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-title">🚀 DEPLOYMENT FREQUENCY</div>
+            <div class="kpi-value" id="deployFreq">12.4</div>
+            <div class="trend" id="deployTrend">▲ +2.1 / day</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">⏱️ LEAD TIME (CHANGE)</div>
+            <div class="kpi-value" id="leadTime">4.2<span style="font-size:1rem;">min</span></div>
+            <div class="trend" id="leadTrend">▼ -0.3 min</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">🔁 CHANGE FAILURE RATE</div>
+            <div class="kpi-value" id="failRate">2.8<span style="font-size:1rem;">%</span></div>
+            <div class="trend" id="failTrend">▼ 0.4%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">⏲️ MEAN TIME TO RECOVERY</div>
+            <div class="kpi-value" id="mttr">6.2<span style="font-size:1rem;">min</span></div>
+            <div class="trend" id="mttrTrend">▼ 0.9min</div>
+        </div>
     </div>
-    <div>
-      <button id="resetBtn">⟳ RESONANCE BOOST</button>
+
+    <!-- main panels : pipeline + realtime logs + deployment radar -->
+    <div class="dashboard-grid">
+        <!-- CI/CD Pipeline Stages + animation -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title"><span class="live-dot"></span> ADARSH · ACTIVE PIPELINE</span>
+                <button id="triggerPipelineBtn" class="btn-reset" style="padding: 4px 14px;">▶ TRIGGER BUILD</button>
+            </div>
+            <div class="pipeline-visual" id="pipelineStages">
+                <div class="stage" data-stage="0">📦 CODE COMMIT</div>
+                <div class="stage" data-stage="1">🔨 BUILD</div>
+                <div class="stage" data-stage="2">🧪 TEST</div>
+                <div class="stage" data-stage="3">🐳 CONTAINERIZE</div>
+                <div class="stage" data-stage="4">🚢 DEPLOY</div>
+            </div>
+            <div id="pipelineStatusMsg" style="font-size:0.7rem; margin: 10px 0 0 10px; color:#6fcf97;">✓ Last pipeline: success by Adarsh @ 2s ago</div>
+            <div class="footer-metrics">
+                <span>🏗️ active runner: adarsh-build-node</span>
+                <span>📦 image: adarsh/app:v3.2</span>
+            </div>
+        </div>
+
+        <!-- realtime streaming log (like kubectl logs -f) -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title"><span class="live-dot"></span> 📜 LIVE STREAM LOGS (Adarsh/infra)</span>
+                <span style="font-size:0.6rem;">tail -f /var/log/deploy.log</span>
+            </div>
+            <div class="log-container" id="logStream">
+                <div class="log-line">[START] Observability initialized — welcome Adarsh</div>
+                <div class="log-line">[INFO] pipeline health: nominal</div>
+                <div class="log-line">[METRIC] deployment frequency synced</div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="footer">
-    REALTIME DATA • DYNAMIC PARTICLE FIELD • INTERACTIVE AETHER
-  </div>
+
+    <!-- deployment success rate chart + extra metric (realtime) -->
+    <div class="dashboard-grid">
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">📈 DEPLOYMENT SUCCESS RATE (last 12 hrs) · realtime</span>
+                <span id="successRateLabel" style="color:#0fa;">98.3%</span>
+            </div>
+            <canvas id="deployChart" width="500" height="160" style="width:100%; height:160px;"></canvas>
+            <div class="footer-metrics">
+                <span>✅ successful deploys: <span id="successCount">187</span></span>
+                <span>❌ failed: <span id="failCount">4</span></span>
+                <span>🔄 rolling updates: active</span>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">🛠️ ADARSH · INFRA COMMANDS (event simulator)</span>
+                <button id="simulateIncidentBtn" class="btn-reset" style="background:#ff336622; border-color:#f66;">⚠️ SIMULATE INCIDENT</button>
+            </div>
+            <div style="margin-top: 12px;">
+                <div style="background:#031018; border-radius: 1rem; padding: 12px;">
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <code style="color:#0ff;">kubectl get pods -n prod</code>
+                        <span id="podStatus" style="color:#8f8;">✅ 6/6 running</span>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <code style="color:#7cf;">➜ git commit -m "feat: Adarsh observability"</code>
+                        <div id="commitEffect" style="font-size:0.7rem; margin-top: 8px;">last commit: a1b2c3d | by Adarsh</div>
+                    </div>
+                </div>
+                <div id="incidentAlert" style="margin-top: 12px; background:#330a1c; border-radius: 1rem; padding: 8px; color:#ffb3b3; font-size:0.7rem; display: none;">🚨 INCIDENT MODE: MTTR active — Adarsh is investigating 🔥</div>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #5c7c8c;">✨ real-time devops metrics · powered by synthetic telemetry ✨ name: Adarsh · pipeline guardian</div>
 </div>
 
 <script>
-  (function(){
-    // --------------------------------------------------------------
-    //  REAL-TIME EXCITING INDEX: "NEBULA SYNC" 
-    //  - Dynamic particle system with mouse/touch interaction
-    //  - Simulated real-time cosmic data (energy, frequency, flux)
-    //  - Particles respond to audio-reactive-like motion (no audio, but generative)
-    //  - Fluid colors, evolving field, mesmerizing visuals
-    // --------------------------------------------------------------
-    const canvas = document.getElementById('cosmicCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // UI Elements
-    const particleCountSpan = document.getElementById('particleCount');
-    const frequencyValSpan = document.getElementById('frequencyVal');
-    const energyLevelSpan = document.getElementById('energyLevel');
-    const energyBarDiv = document.getElementById('energyBar');
-    const resetBtn = document.getElementById('resetBtn');
-
-    // Canvas dimensions
-    let width, height;
-    
-    // Particle array
-    let particles = [];
-    const PARTICLE_COUNT = 280;   // base count, will be dynamic-ish
-    
-    // Global real-time state
-    let time = 0;
-    let lastTimestamp = 0;
-    let frame = 0;
-    
-    // simulated cosmic metrics
-    let cosmicEnergy = 72.4;      // range 20 - 145
-    let frequency = 7.83;         // schumann resonance inspired, variable
-    let targetFrequency = 7.83;
-    
-    // mouse / touch interaction (creates force fields)
-    let mouseX = -1000, mouseY = -1000;
-    let mouseActive = false;
-    let touchActive = false;
-    
-    // for smooth energy drift & realtime excitement
-    let energyVelocity = 0;
-    
-    // particle movement parameters
-    const FORCE_STRENGTH = 0.28;
-    const EDGE_BUFFER = 40;
-    
-    // colors dynamic palette
-    let hueShift = 0;
-    
-    // initialize particles with interesting initial positions & velocities
-    function initParticles(count) {
-      const newParticles = [];
-      for(let i = 0; i < count; i++) {
-        // spread across canvas, but also some clustered zones for beauty
-        let x, y;
-        if(Math.random() > 0.6) {
-          x = width * 0.2 + Math.random() * width * 0.6;
-          y = height * 0.2 + Math.random() * height * 0.6;
-        } else {
-          x = Math.random() * width;
-          y = Math.random() * height;
-        }
-        newParticles.push({
-          x: x,
-          y: y,
-          vx: (Math.random() - 0.5) * 1.2,
-          vy: (Math.random() - 0.5) * 1.2,
-          size: 2 + Math.random() * 5,
-          baseHue: Math.random() * 360,
-          phase: Math.random() * Math.PI * 2,
-          alpha: 0.6 + Math.random() * 0.4,
-          orbitRadius: 0,  // not used, but for variety
-        });
-      }
-      return newParticles;
-    }
-    
-    // resize handler
-    function resizeCanvas() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-      // reinitialize particles on resize for proper distribution
-      particles = initParticles(PARTICLE_COUNT);
-      // also update displayed count
-      particleCountSpan.innerText = particles.length;
-    }
-    
-    // update realtime metrics using noise & user interaction & frame based modulation
-    function updateMetrics(deltaTime) {
-      // deltaTime in ms, smooth changes ~60fps -> delta 16ms typical
-      const dt = Math.min(0.033, deltaTime / 1000);
-      
-      // Frequency drifts like natural resonance + mouse influence
-      let freqDelta = (Math.sin(time * 0.37) * 0.08) + (Math.cos(time * 0.71) * 0.04);
-      if(mouseActive || touchActive) {
-        // mouse presence boosts frequency & energy: interactive excitement
-        freqDelta += 0.12;
-      }
-      targetFrequency = Math.min(24.0, Math.max(3.2, 7.83 + freqDelta * 2.5));
-      frequency += (targetFrequency - frequency) * (dt * 5);
-      
-      // Energy dynamics: based on frequency and particle activity and mouse
-      let energyTarget = 35 + (frequency - 3) * 4.5;
-      if(mouseActive) energyTarget += 18;
-      energyTarget = Math.min(148, Math.max(22, energyTarget));
-      energyVelocity += (energyTarget - cosmicEnergy) * dt * 4.5;
-      energyVelocity *= (1 - dt * 2);
-      cosmicEnergy += energyVelocity * dt;
-      cosmicEnergy = Math.min(152, Math.max(18, cosmicEnergy));
-      
-      // update UI
-      energyLevelSpan.innerText = cosmicEnergy.toFixed(1);
-      let percent = (cosmicEnergy - 18) / (152 - 18) * 100;
-      percent = Math.min(100, Math.max(0, percent));
-      energyBarDiv.style.width = percent + "%";
-      frequencyValSpan.innerText = frequency.toFixed(2);
-      
-      // particle count dynamic: show realtime "flux" - but number of particles stays constant, we display flux index based on velocity
-      // let's compute average speed as flux
-      let avgSpeed = 0;
-      for(let p of particles) {
-        avgSpeed += Math.hypot(p.vx, p.vy);
-      }
-      avgSpeed = avgSpeed / particles.length;
-      let fluxIndex = (avgSpeed * 3.8).toFixed(0);
-      particleCountSpan.innerText = fluxIndex;
-    }
-    
-    // update particle physics: flow field based on sine/cosine & mouse influence
-    function updateParticles(deltaTime) {
-      const dt = Math.min(0.033, deltaTime / 1000);
-      const forceMult = FORCE_STRENGTH * dt * 8;
-      
-      // frequency influences particle agitation: more frequency = more turbulent motion
-      const turbulence = 0.6 + (frequency / 20) * 1.4;
-      
-      for(let p of particles) {
-        // cosmic wind using perlin-like sin/cos functions
-        const angleX = time * 0.37 + p.y * 0.003;
-        const angleY = time * 0.53 + p.x * 0.002;
-        let ax = Math.sin(angleX) * 0.25 * turbulence;
-        let ay = Math.cos(angleY) * 0.25 * turbulence;
+    (function() {
+        // ======================= REAL-TIME DEVOPS SIMULATOR =======================
+        // all metrics dynamic, streaming logs, pipeline stage simulation, chart updates
+        // showing name "Adarsh" across events
         
-        // mouse repulsion/attraction: creates a "gravity well" or disturbance field
-        if(mouseActive && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
-          const dx = p.x - mouseX;
-          const dy = p.y - mouseY;
-          const distSq = dx*dx + dy*dy;
-          const dist = Math.sqrt(distSq) + 0.001;
-          // repulsive radial force that pushes particles away, like energy vortex
-          const forceMag = 45.0 / (distSq + 80);
-          ax += dx / dist * forceMag * (cosmicEnergy / 70);
-          ay += dy / dist * forceMag * (cosmicEnergy / 70);
+        // DOM elements
+        const deployFreqEl = document.getElementById('deployFreq');
+        const leadTimeEl = document.getElementById('leadTime');
+        const failRateEl = document.getElementById('failRate');
+        const mttrEl = document.getElementById('mttr');
+        const deployTrend = document.getElementById('deployTrend');
+        const leadTrend = document.getElementById('leadTrend');
+        const failTrend = document.getElementById('failTrend');
+        const mttrTrend = document.getElementById('mttrTrend');
+        const successRateSpan = document.getElementById('successRateLabel');
+        const successCountSpan = document.getElementById('successCount');
+        const failCountSpan = document.getElementById('failCount');
+        const logContainer = document.getElementById('logStream');
+        const pipelineStatusMsg = document.getElementById('pipelineStatusMsg');
+        const triggerBtn = document.getElementById('triggerPipelineBtn');
+        const simulateIncidentBtn = document.getElementById('simulateIncidentBtn');
+        const podStatusSpan = document.getElementById('podStatus');
+        const incidentAlertDiv = document.getElementById('incidentAlert');
+        const commitEffectSpan = document.getElementById('commitEffect');
+        
+        // canvas chart
+        const chartCanvas = document.getElementById('deployChart');
+        let ctx = chartCanvas.getContext('2d');
+        
+        // data values (real-time drifts)
+        let deployFreq = 12.4;       // deploys per day
+        let leadTime = 4.2;          // minutes
+        let failRate = 2.8;          // percent
+        let mttr = 6.2;              // minutes recovery
+        
+        // extra counters for chart (success rate history)
+        let successHistory = Array(24).fill(96);   // last 12h (each point 30min)
+        let currentSuccess = 98.3;
+        let totalSuccess = 187;
+        let totalFailed = 4;
+        
+        // pipeline simulation state
+        let pipelineActive = false;
+        let currentStage = -1;
+        let pipelineInterval = null;
+        
+        // incident active flag
+        let incidentActive = false;
+        let incidentTimeout = null;
+        
+        // helper: add log message (with timestamp and Adarsh reference)
+        function addLogMessage(msg, type = "INFO") {
+            const logDiv = document.createElement('div');
+            logDiv.className = 'log-line';
+            const now = new Date().toLocaleTimeString();
+            const prefix = `[${now}] [${type}]`;
+            logDiv.innerHTML = `${prefix} ✦ ${msg}`;
+            logContainer.appendChild(logDiv);
+            logDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // keep only last 50 logs
+            while(logContainer.children.length > 45) logContainer.removeChild(logContainer.firstChild);
         }
         
-        // additional oscillating global resonance (frequency based)
-        const resonantForceX = Math.sin(time * frequency * 0.9) * 0.12 * (cosmicEnergy/60);
-        const resonantForceY = Math.cos(time * frequency * 0.7) * 0.12 * (cosmicEnergy/60);
-        ax += resonantForceX;
-        ay += resonantForceY;
-        
-        p.vx += ax * forceMult;
-        p.vy += ay * forceMult;
-        
-        // damping & max speed
-        p.vx *= 0.992;
-        p.vy *= 0.992;
-        const maxSpeed = 4.2 + turbulence * 1.3;
-        let spd = Math.hypot(p.vx, p.vy);
-        if(spd > maxSpeed) {
-          p.vx = (p.vx / spd) * maxSpeed;
-          p.vy = (p.vy / spd) * maxSpeed;
+        // update KPI visuals & trends
+        function updateKPIs() {
+            deployFreqEl.innerText = deployFreq.toFixed(1);
+            leadTimeEl.innerHTML = leadTime.toFixed(1) + '<span style="font-size:1rem;">min</span>';
+            failRateEl.innerHTML = failRate.toFixed(1) + '<span style="font-size:1rem;">%</span>';
+            mttrEl.innerHTML = mttr.toFixed(1) + '<span style="font-size:1rem;">min</span>';
+            // random trends for excitement
+            deployTrend.innerText = (deployFreq > 11.5 ? '▲' : '▼') + ` +${(Math.random()*0.8).toFixed(1)}/day`;
+            leadTrend.innerText = leadTime < 5 ? '▼ -0.2min' : '▲ +0.1min';
+            failTrend.innerText = failRate < 3.5 ? '▼ 0.3%' : '▲ 0.2%';
+            mttrTrend.innerText = mttr < 7 ? '▼ 0.5min' : '▲ 0.3min';
         }
         
-        // update position
-        p.x += p.vx * dt * 70;
-        p.y += p.vy * dt * 70;
+        // recalc success rate from counters
+        function updateSuccessRateMeta() {
+            let total = totalSuccess + totalFailed;
+            let rate = total === 0 ? 100 : (totalSuccess / total) * 100;
+            currentSuccess = rate;
+            successRateSpan.innerText = currentSuccess.toFixed(1) + '%';
+            successCountSpan.innerText = totalSuccess;
+            failCountSpan.innerText = totalFailed;
+        }
         
-        // wrap around edges with artistic effect (teleport to opposite side for infinite flow)
-        if(p.x < -EDGE_BUFFER) p.x = width + EDGE_BUFFER;
-        if(p.x > width + EDGE_BUFFER) p.x = -EDGE_BUFFER;
-        if(p.y < -EDGE_BUFFER) p.y = height + EDGE_BUFFER;
-        if(p.y > height + EDGE_BUFFER) p.y = -EDGE_BUFFER;
-        
-        // update color phase based on speed and energy
-        p.phase += (Math.hypot(p.vx, p.vy) * 0.05 + 0.01);
-      }
-    }
-    
-    // draw everything with glowing, energetic style
-    function draw() {
-      if(!ctx) return;
-      // clear with semi-transparent to create trailing effect (motion blur)
-      ctx.fillStyle = "rgba(3, 8, 18, 0.25)";
-      ctx.fillRect(0, 0, width, height);
-      
-      // draw a subtle radial gradient background (cosmic aura)
-      const grad = ctx.createRadialGradient(width/2, height/2, 30, width/2, height/2, width*0.7);
-      grad.addColorStop(0, "rgba(20, 30, 70, 0.2)");
-      grad.addColorStop(1, "rgba(0, 0, 0, 0.6)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, height);
-      
-      // draw connecting lines between close particles for "energy web" effect
-      ctx.beginPath();
-      ctx.lineWidth = 0.8;
-      const connectionDist = 75 + (Math.sin(time * 0.5) * 8);
-      for(let i = 0; i < particles.length; i++) {
-        for(let j = i+1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.hypot(dx, dy);
-          if(dist < connectionDist) {
-            const intensity = 1 - (dist / connectionDist);
-            const alphaLine = intensity * 0.25 * (cosmicEnergy/100);
-            const hueLine = (hueShift + (particles[i].baseHue + particles[j].baseHue)/2) % 360;
-            ctx.strokeStyle = `hsla(${hueLine}, 85%, 65%, ${alphaLine})`;
+        // draw realtime chart (success rate trend)
+        function drawChart() {
+            if(!ctx) return;
+            const w = chartCanvas.clientWidth;
+            const h = 160;
+            chartCanvas.width = w;
+            chartCanvas.height = h;
+            ctx = chartCanvas.getContext('2d');
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#05121E';
+            ctx.fillRect(0, 0, w, h);
+            if(successHistory.length === 0) return;
+            const step = w / (successHistory.length - 1);
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 2.5;
+            ctx.shadowBlur = 0;
+            for(let i=0; i<successHistory.length; i++) {
+                let x = i * step;
+                let y = h - (successHistory[i] / 100) * h;
+                if(i===0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
             ctx.stroke();
-          }
+            ctx.fillStyle = '#0ff3';
+            ctx.beginPath();
+            for(let i=0; i<successHistory.length; i++) {
+                let x = i * step;
+                let y = h - (successHistory[i] / 100) * h;
+                ctx.arc(x, y, 3, 0, 2*Math.PI);
+                ctx.fill();
+            }
         }
-      }
-      
-      // draw each particle with glow & dynamic colors
-      for(let p of particles) {
-        // color influenced by speed, energy, and time
-        const speedFactor = Math.min(1, Math.hypot(p.vx, p.vy) / 3.5);
-        const dynamicHue = (p.baseHue + time * 25 + speedFactor * 120 + cosmicEnergy) % 360;
-        const sat = 75 + speedFactor * 25;
-        let light = 55 + speedFactor * 25;
-        // energy boost makes particles more incandescent
-        const energyGlow = cosmicEnergy / 90;
-        const radius = p.size * (0.8 + Math.sin(p.phase) * 0.2) * (0.7 + energyGlow * 0.7);
         
-        // outer glow
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = `hsl(${dynamicHue}, 100%, 65%)`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, radius + 1.5, 0, Math.PI*2);
-        ctx.fillStyle = `hsla(${dynamicHue}, ${sat}%, ${light}%, 0.25)`;
-        ctx.fill();
-        
-        // core particle
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, radius, 0, Math.PI*2);
-        ctx.fillStyle = `hsla(${dynamicHue}, ${sat}%, ${light+10}%, 0.95)`;
-        ctx.fill();
-        
-        // tiny inner spark
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, radius*0.4, 0, Math.PI*2);
-        ctx.fillStyle = `rgb(255, 255, 220)`;
-        ctx.fill();
-      }
-      // reset shadow
-      ctx.shadowBlur = 0;
-      
-      // draw interactive mouse field effect if active
-      if(mouseActive && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
-        ctx.beginPath();
-        ctx.arc(mouseX, mouseY, 32 + Math.sin(time * 15)*5, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(0, 255, 200, 0.12)`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(mouseX, mouseY, 15, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(100, 255, 200, 0.3)`;
-        ctx.fill();
-      }
-      
-      // draw extra floating energy text or wave effect (just for style)
-      ctx.font = "400 12px 'Orbitron'";
-      ctx.fillStyle = `rgba(180, 240, 255, 0.5)`;
-      ctx.shadowBlur = 0;
-      ctx.fillText(`⚡ RESONANCE MODE : ${frequency.toFixed(2)} Hz`, width - 170, height - 18);
-    }
-    
-    // update everything each frame
-    let lastFrameTime = performance.now();
-    function animate(now) {
-      const delta = Math.min(100, now - lastFrameTime);
-      if(delta > 0) {
-        const deltaSec = delta / 1000;
-        // update global time
-        time += deltaSec * 1.2;
-        hueShift = (hueShift + 0.5) % 360;
-        
-        updateMetrics(delta);
-        updateParticles(delta);
-        draw();
-      }
-      lastFrameTime = now;
-      requestAnimationFrame(animate);
-    }
-    
-    // ---- Mouse / Touch tracking for interactive force field ----
-    function handleMouseMove(e) {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      mouseActive = true;
-      touchActive = false;
-      // auto reset inactive after some time? we keep until leave
-    }
-    function handleMouseLeave() {
-      mouseActive = false;
-      mouseX = -1000;
-    }
-    function handleTouchStart(e) {
-      e.preventDefault();
-      if(e.touches.length) {
-        mouseX = e.touches[0].clientX;
-        mouseY = e.touches[0].clientY;
-        mouseActive = true;
-        touchActive = true;
-      }
-    }
-    function handleTouchMove(e) {
-      e.preventDefault();
-      if(e.touches.length) {
-        mouseX = e.touches[0].clientX;
-        mouseY = e.touches[0].clientY;
-        mouseActive = true;
-        touchActive = true;
-      }
-    }
-    function handleTouchEnd(e) {
-      e.preventDefault();
-      mouseActive = false;
-      touchActive = false;
-      mouseX = -1000;
-    }
-    
-    // reset / boost effect: adds energy burst & reset some particle velocities outward
-    function resonanceBoost() {
-      // increase cosmic energy abruptly
-      cosmicEnergy = Math.min(152, cosmicEnergy + 28);
-      energyVelocity += 12;
-      // give particles a radial outward burst from center
-      const centerX = width/2;
-      const centerY = height/2;
-      for(let p of particles) {
-        const dx = p.x - centerX;
-        const dy = p.y - centerY;
-        const dist = Math.hypot(dx, dy) + 0.1;
-        const angle = Math.atan2(dy, dx);
-        const force = 3.5;
-        p.vx += Math.cos(angle) * force;
-        p.vy += Math.sin(angle) * force;
-        // limit speed
-        let spd = Math.hypot(p.vx, p.vy);
-        if(spd > 6.2) {
-          p.vx = (p.vx / spd) * 6.0;
-          p.vy = (p.vy / spd) * 6.0;
+        // push new success data point based on latest deployment outcome
+        function addSuccessDataPoint(successFlag) {
+            let newRate;
+            if(successFlag) {
+                totalSuccess++;
+                newRate = (totalSuccess / (totalSuccess + totalFailed)) * 100;
+            } else {
+                totalFailed++;
+                newRate = (totalSuccess / (totalSuccess + totalFailed)) * 100;
+            }
+            currentSuccess = newRate;
+            successHistory.push(newRate);
+            if(successHistory.length > 24) successHistory.shift();
+            updateSuccessRateMeta();
+            drawChart();
         }
-      }
-      // also boost frequency momentarily
-      targetFrequency += 2.2;
-      setTimeout(() => {
-        targetFrequency = Math.min(24, targetFrequency - 1.1);
-      }, 400);
-    }
-    
-    // attach event listeners and init
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-    });
-    canvas.parentElement.addEventListener('mousemove', handleMouseMove);
-    canvas.parentElement.addEventListener('mouseleave', handleMouseLeave);
-    canvas.parentElement.addEventListener('touchstart', handleTouchStart, {passive: false});
-    can
+        
+        // simulate a deployment outcome triggered by pipeline
+        function simulateDeploymentOutcome(success) {
+            if(success) {
+                addLogMessage("✅ Deployment successful! Metrics updated | orchestrated by Adarsh", "SUCCESS");
+                addSuccessDataPoint(true);
+                // tweak KPIs positively
+                deployFreq = Math.min(24, deployFreq + 0.35);
+                leadTime = Math.max(1.8, leadTime - 0.1);
+                failRate = Math.max(0.5, failRate - 0.08);
+                mttr = Math.max(2.5, mttr - 0.12);
+            } else {
+                addLogMessage("❌ Deployment failure! Initiating auto rollback | incident response by Adarsh", "ERROR");
+                addSuccessDataPoint(false);
+                deployFreq = Math.max(5, deployFreq - 0.2);
+                leadTime = Math.min(12, leadTime + 0.4);
